@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont 
-from random import sample, choice, randrange
+from random import sample, choice, randrange, randint
 
 
 class Captcha:
@@ -8,16 +8,29 @@ class Captcha:
 
     def create_captcha(self, font_size, count):
         self.img = Image.new("RGB", self.captcha_size, "#ffffff")
+        pix = self.img.load()
         font = ImageFont.truetype('arial.ttf', size=font_size)
-        draw_text = ImageDraw.Draw(self.img)
+        draw = ImageDraw.Draw(self.img)
         generation_text = self.generateSymb(count)
         w, h = font.getsize(generation_text)
-        draw_text.text(
+        draw.text(
             ((self.captcha_size[0] - w) / 2, (self.captcha_size[1] - h) / 2),
             generation_text,
             font=font,
             fill=(0, 0, 0))
-        self.img.show()
+        for i in range(count * 3):
+            draw.line(
+                (randrange(0, self.captcha_size[0]), randrange(0, self.captcha_size[1]), 
+                randrange(0, self.captcha_size[0]), randrange(0, self.captcha_size[1])),
+                fill=(0, 0, 0), width=3)
+        for x in range(self.captcha_size[0]):
+            for y in range(self.captcha_size[1]):
+                rand = randint(-70, 70)
+                a = pix[x, y][0] + rand
+                b = pix[x, y][1] + rand
+                c = pix[x, y][2] + rand
+                draw.point((x, y), (0 if a < 0 or b < 0 or c < 0 else 255, 0 if b < 0 else 255, 0 if c < 0 else 255))
+        self.img.save("captcha_test.png")
         return generation_text
     
     def generateSymb(self, count):
@@ -26,4 +39,4 @@ class Captcha:
         return ''.join(sample(random, k=count))
 
 
-Captcha([200, 100]).create_captcha(font_size=32, count=5)
+Captcha([220, 100]).create_captcha(font_size=70, count=5)
